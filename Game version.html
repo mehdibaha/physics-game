@@ -3,16 +3,11 @@
     <head>
         <meta charset="utf-8" />
         <title>Ballistics 101 [0.8]</title>
-		<script src="js/jquery.js"></script>
-		<script src="js/jquery-ui.js"></script>
-		<script src="js/dat.gui.min.js"></script>
-		<script src="js/dat.color.min.js"></script>
-		<script src="js/Stats.js"></script>
-		<!-- <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+		<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 		<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.min.js"></script>
 		<script src="http://dat-gui.googlecode.com/git/build/dat.gui.min.js"></script>
 		<script src="http://dat-gui.googlecode.com/git/build/dat.color.min.js"></script>
-		<script src="http://stemkoski.github.io/Three.js/js/Stats.js"></script>		!-->
+		<script src="http://stemkoski.github.io/Three.js/js/Stats.js"></script>	
     </head>
 	<style type="text/css">
 	canvas
@@ -21,13 +16,13 @@
 		left:110px;
 		margin:2% auto;
 		border:1px solid #999;
-		/* background-image: url(http://i.imgur.com/OHDzHg7.jpg); */
-		background-image:url(background.jpg);
+		background-image: url(https://fbcdn-sphotos-c-a.akamaihd.net/hphotos-ak-prn1/18450_1320228686083_6768962_n.jpg);
 	}
 	</style>
     <body>
 		<canvas id="canvas" height="585" width="1200"></canvas>
 		<div id="container"></div>
+		<audio id="punch" src="punch.mp3" preload="auto"></audio>
 		<script type='text/javascript'>
 /*
 Copyright 2013 El Mehdi Baha
@@ -73,7 +68,7 @@ var V = function(x, y) {
 };
 
 V.prototype.add = function(v) {
-    return new V(this.x + v.x, this.y + v.y);
+    return new V(v.x + this.x, v.y + this.y);
 };
 V.prototype.perp = function (v) {
 	return new V(-this.y, this.x);
@@ -100,21 +95,24 @@ window.onload = function() {
 
 var balles = [];
 var controles = new function() {
-	this.couleur = '#'+Math.floor(Math.random()*16777215).toString(16);
-	this.airdrag = 0.02;
-	this.airdrag_activation = false;
-	this.lorentz = false;
-	this.gravity = true;
-	this.mass = 37;
-	this.angle = 50;
-	this.initial_speed = 50;
-	this.addball = function () {
-	var balle = new Balle(0, height, controles.mass, this.couleur); // A chaque pression de bouton 
-	balle.v = new V(controles.initial_speed * 120 * Math.cos(Math.PI * controles.angle / 180), controles.initial_speed * 220 * Math.sin(Math.PI * controles.angle / 180));
-	balles.push(balle);
-    };
-	this.reset = function () {
-	balles = [];
+  this.couleur = '#'+Math.floor(Math.random()*16777215).toString(16);
+  this.airdrag = 0.02;
+  this.airdrag_activation = false;
+  this.lorentz = false;
+  this.gravity = true;
+  this.mass = 37;
+  this.angle = 50;
+  this.initial_speed = 50;
+  
+  this.addball = function () {
+  var balle = new Balle(0, height, controles.mass, this.couleur); // A chaque pression de bouton 
+balle.v = new V(controles.initial_speed * 120 * Math.cos(Math.PI * controles.angle / 180), controles.initial_speed * 220 * Math.sin(Math.PI * controles.angle / 180));
+balles.push(balle);
+document.getElementById('punch').play();
+  };
+
+  this.reset = function () {
+  balles = [];
   };
 };
 
@@ -127,6 +125,11 @@ var Balle = function(x, y, rayon, couleur, masse) { // Chaque cercle a des coord
 	this.v = new V(0, 0); // On initialise le vecteur Vitesse
 	this.a = new V(0, 0); // On initialise le vecteur Accéleration
 };
+function bouchto () {
+alert("You have now killed Bouchto !");
+$('canvas').css('backgroundImage','url(http://i.imgur.com/05f4w8O.png)');
+}
+setTimeout(bouchto,10000);
 
 		// Calcul de la trajectoire
 Balle.prototype.trajectoire = function(v) {
@@ -150,8 +153,6 @@ Balle.prototype.trajectoire = function(v) {
 		{
 			f = f.add(new V(0, this.masse * G * Mt / Math.pow(Rt + height - this.s.y, 2))); // on ajoute le poids
 		}
-	
-	f = f.add(new V(0.0000000000000000000001*this.v.x, 0));
 			
 		// De l'intégration de Verlet
 	var ds = this.v.scale(dt).add(this.a.scale(0.5 * dt * dt)); // En gros, dx ou dy = v*dt + a*0.5*dt^2
