@@ -1,0 +1,60 @@
+<canvas id="canvas" height="585" width="760"></canvas>
+	<style type='text/css'>
+    canvas {
+    display:block;
+    margin:2% auto;
+    border:1px solid #999;
+	background-image:url(water.jpg);
+}
+	</style>
+<script type='text/javascript'>
+var canvas = document.getElementById('canvas'), // On déclare le cadre, sa taille... etc.
+    ctx = canvas.getContext('2d'),
+    height = 585,
+    width = 760,
+	r=40, // (en pixels/cm)
+	x=width / 2,// Quand t=0, x=200
+	y=r, // et y=10
+	vy=0,
+	ay=0,
+	e=-0.5,
+	masse_volumique_du_cube_nonconvertie=7.874 // (en g/cm3) du fer
+	masse_volumique_du_cube=0.007874 // (en kg/cm3) du fer
+	masse_du_cube=4 * masse_volumique_du_cube * Math.PI * r * r * r / 3, // (en kg)
+	dt = 0.016,  // (en sec)
+    densite_du_fluide = 0.001, // ici de l'eau
+    coefficient_de_trainee = 0.47,
+    surface_frontale = Math.PI * r * r;
+	ctx.fillStyle= 'red';
+	function loop()
+	{
+		var fy = 0;
+		fy += 9.81 * masse_du_cube * 10;
+		fy += -1 * 0.5 * densite_du_fluide * vy * vy * surface_frontale * coefficient_de_trainee;
+		fy += -1 * 9.81 * densite_du_fluide * masse_du_cube;
+		/* Verlet integration for the y-direction */
+		dy = vy * dt + (0.5 * ay * dt * dt);
+		y += dy;
+		new_ay = fy / masse_du_cube;
+		avg_ay = 0.5 * (new_ay + ay);
+		vy += avg_ay * dt;
+		draw();
+		
+	if (y + r > height)
+    {
+        vy *= e; 
+        y = height - r;           
+    }
+    
+	}
+	function draw()
+	{
+    ctx.clearRect(0, 0, width, height);
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2, true);
+    ctx.fill();
+    ctx.closePath();
+	}
+/* A real project should use requestAnimationFrame, and you should time the frame rate and pass a variable "dt" to your physics function. This is just a simple brute force method of getting it done. */
+setInterval(loop, dt);
+</script>
